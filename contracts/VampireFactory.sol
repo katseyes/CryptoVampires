@@ -1,17 +1,25 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-contract VampireFactory {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+
+contract VampireFactory is Ownable{
 
      event NewVampire(uint vampireId, string name, uint dna);
 
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
-
+    uint cooldownTime = 1 days;
+    // inside a struct uint32 takes less size than uint (256)
+    // but they have to be packed together
     struct Vampire {
         string name;
         uint dna;
+        uint32 level;
+        uint32 readyTime;
     }
 
+    // vampire list
     Vampire[] public vampires;
     // maps a vampire to its owner
     mapping (uint => address) public vampireToOwner;
@@ -31,7 +39,10 @@ contract VampireFactory {
         return rand % dnaModulus;
     }
 
-    function createRandomVampire(string memory _name) public {
+    // random vampire creation (name based)
+    // only possible if user has no vampire
+    function createRandomVampire(string memory _name) public 
+    {
          require(ownerVampireCount[msg.sender] == 0);
         uint randDna = _generateRandomDna(_name);
         _createVampire(_name, randDna);
