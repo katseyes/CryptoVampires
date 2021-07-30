@@ -1,10 +1,15 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./safemath.sol";
 
 
 contract VampireFactory is Ownable{
 
+
+using SafeMath for uint256;
+  using SafeMath32 for uint32;
+  using SafeMath16 for uint16;
      event NewVampire(uint vampireId, string name, uint dna);
 
     uint dnaDigits = 16;
@@ -17,6 +22,8 @@ contract VampireFactory is Ownable{
         uint dna;
         uint32 level;
         uint32 readyTime;
+        uint16 winCount;
+        uint16 lossCount;
     }
 
     // vampire list
@@ -28,9 +35,9 @@ contract VampireFactory is Ownable{
 
 
     function _createVampire(string memory _name, uint _dna) internal {
-        uint id = vampires.push(Zombie(_name, _dna)) - 1;
+        uint id = vampires.push(Zombie(_name, _dna,1,uint32(now + cooldownTime),0,0)) - 1;
         vampireToOwner[id] = msg.sender;
-        ownerVampireCount[msg.sender]++;
+        ownerZombieCount[msg.sender] = ownerZombieCount[msg.sender].add(1);
         emit NewVampire(id, _name, _dna);
     }
 
